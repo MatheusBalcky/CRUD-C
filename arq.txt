@@ -1,0 +1,3 @@
+matricula;nome;curso
+2026;Matheus;TADS
+5151;matheus;TADS
