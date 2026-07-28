@@ -21,7 +21,8 @@ int handle_create();
 
 int handle_read (int option);
 
-//---------------------------FUNÇÃO MAIN---------------------------------//
+
+//*---------------------------FUNÇÃO MAIN---------------------------------//
 
 
 int main (void){
@@ -41,7 +42,8 @@ int main (void){
 
 
 
-//----------------------FUNÇÕES----------------------------//
+//*----------------------FUNÇÕES----------------------------//
+
 
 
 MenuData menu(){
@@ -118,7 +120,7 @@ int handle_create(){
     return 1;
 }
 
-int handle_read(int aluno_id){
+int handle_read(int aluno_matricula){
     printf("\n");
     FILE *file = fopen("arq.txt", "r");
     char line[100];
@@ -143,7 +145,7 @@ int handle_read(int aluno_id){
     }
 
     fclose(file);
-    //! CONSULTAR O ALUNO AQUI E PRINTAR
+    // TODO: CONSULTAR O ALUNO AQUI E PRINTAR
     printf(GREEN "\nArquivo lido com sucesso\n" RESET);
     sleep(2);
 
