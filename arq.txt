@@ -1,3 +1,13 @@
 matricula;nome;curso
 2026;Matheus;TADS
-5151;matheus;TADS
+517351;matheus;TADS
+202426;Matheus;TADS
+5161251;matheus;TADS
+2520226;Matheus;TADS
+5615151;matheus;TADS
+202346;Matheus;TADS
+51251;matheus;TADS
+20226;Matheus;TADS
+5151;mathAAAAAeus;TADS
+202226;Matheus;TADS
+511531;matheus;TADS

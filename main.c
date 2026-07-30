@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "inputs_outputs.h"
 #include <unistd.h>
 #define RESET   "\033[0m"
@@ -123,29 +124,35 @@ int handle_create(){
 int handle_read(int aluno_matricula){
     printf("\n");
     FILE *file = fopen("arq.txt", "r");
-    char line[100];
+
 
     if (file == NULL) {
         printf("Erro ao abrir o arquivo.\n");
         return 0; //false
     }
+    
+    char line[100];
 
     while (fgets(line, sizeof(line), file) != NULL) {
-        // printf("%s",line);
+        char current_line[100]; strcpy(current_line, line);
+        char *campos[3];
 
-        char *campo = strtok(line, ";");
+        campos[0] = strtok(line, ";");
+        campos[1] = strtok(NULL, ";");
+        campos[2] = strtok(NULL, ";");
+        int current_matricula = atoi(campos[0]);
 
-        while (campo != NULL) {
-            printf("%s\n", campo);
-            campo = strtok(NULL, ";");
+        if(current_matricula == aluno_matricula){
+            printf("Aluno encontrado...\n");
+            printf("%-20s %-30s %-15s\n", "Matrícula", "Nome", "Curso");
+            printf("%-20s %-30s %-15s\n", campos[0], campos[1], campos[2]);
+            break;
         }
-
-        printf("------\n");
-
+        
     }
 
+    printf("\n");
     fclose(file);
-    // TODO: CONSULTAR O ALUNO AQUI E PRINTAR
     printf(GREEN "\nArquivo lido com sucesso\n" RESET);
     sleep(2);
 
