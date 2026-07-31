@@ -11,3 +11,7 @@ matricula;nome;curso
 5151;mathAAAAAeus;TADS
 202226;Matheus;TADS
 511531;matheus;TADS
+456456;Nicolas;TADS
+2132143;leo;ENG
+1111;blabla;TEC
+1010;teste;MED

@@ -62,7 +62,7 @@ MenuData menu(){
     scanf("%d", &data.option_number);
 
     if(data.option_number == 2 || data.option_number == 3 || data.option_number == 4){
-        data.matricula = inputInt("Digite o número de matrícula: ");
+        data.matricula = inputInt("Digite o numero de matricula: ");
     }
 
 
@@ -110,10 +110,10 @@ int handle_create(){
 
     fprintf(file, "\n%d;%s;%s", matricula, aluno, curso);
 
-    printf("Adicionando Aluno...\n");
+    printf("\nAdicionando Aluno...\n");
     sleep(2);
     printf("Aluno adicionado, voltando para o menu.\n");
-    sleep(1);
+    sleep(2);
     printf("\n");
 
     fclose(file);
@@ -122,7 +122,6 @@ int handle_create(){
 }
 
 int handle_read(int aluno_matricula){
-    printf("\n");
     FILE *file = fopen("arq.txt", "r");
 
 
@@ -132,9 +131,9 @@ int handle_read(int aluno_matricula){
     }
     
     char line[100];
+    short student_founded = 0; //controlar o estado de aluno encontrado e ñ encontrado
 
     while (fgets(line, sizeof(line), file) != NULL) {
-        char current_line[100]; strcpy(current_line, line);
         char *campos[3];
 
         campos[0] = strtok(line, ";");
@@ -143,17 +142,25 @@ int handle_read(int aluno_matricula){
         int current_matricula = atoi(campos[0]);
 
         if(current_matricula == aluno_matricula){
-            printf("Aluno encontrado...\n");
-            printf("%-20s %-30s %-15s\n", "Matrícula", "Nome", "Curso");
+            student_founded = 1;
+            printf("Aluno encontrado...\n\n");
+            printf("%-20s %-30s %-15s\n", "Matricula", "Nome", "Curso");
             printf("%-20s %-30s %-15s\n", campos[0], campos[1], campos[2]);
+
+            printf("Pressione enter para continuar!");
+            while(getchar() != '\n'); //limpar o buffer
+            getchar();
+
             break;
         }
-        
+         
     }
 
-    printf("\n");
+    if(student_founded == 0) printf(RED "Aluno da matrícula: %d, não encontrado.\n" RESET, aluno_matricula);
+    
+
     fclose(file);
-    printf(GREEN "\nArquivo lido com sucesso\n" RESET);
+    printf(GREEN "Arquivo lido com sucesso.\n" RESET);
     sleep(2);
 
     return 1;
