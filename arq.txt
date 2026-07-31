@@ -15,3 +15,4 @@ matricula;nome;curso
 2132143;leo;ENG
 1111;blabla;TEC
 1010;teste;MED
+2132132;Hugo;TADS
