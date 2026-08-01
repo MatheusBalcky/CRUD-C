@@ -15,22 +15,17 @@ typedef struct {
     char curso[50];
 } Aluno;
 
-typedef struct {
-    int option_number;
-    int matricula;
-} MenuData;
+int menu();
 
-MenuData menu();
-
-int handle_crud(MenuData data);
+int handle_crud(int menu_option);
 
 int handle_create();
 
-int handle_read(int aluno_matricula);
+int handle_read();
 
-int handle_update(int aluno_matricula);
+int handle_update();
 
-int handle_delete(int aluno_matricula);
+int handle_delete();
 
 Aluno *struct_database(int *out_lines);
 
@@ -39,31 +34,27 @@ FILE *open_file(const char *fileName, const char *modo);
 
 //*---------------------------FUNÇÃO MAIN---------------------------------//
 
-
 int main (void){
-    MenuData crud_option;
+    int crud_option;
     int switcher = 1;
 
     while(switcher){
         crud_option = menu();
 
         handle_crud(crud_option);
-        switcher = crud_option.option_number;
+        switcher = crud_option;
     }
-
-    // struct_database();
 
     return 0;
 }
 
 
 
+
 //*----------------------FUNÇÕES----------------------------//
 
-
-
-MenuData menu(){
-    MenuData data;
+int menu(){
+    int menu_option = -1;
     
     printf("\n================MENU DE ALUNOS================\n");
     printf("\nOlá o que você deseja, selecione uma opção abaixo.\n\n");
@@ -74,34 +65,35 @@ MenuData menu(){
     printf("(0) Sair\n");
     printf("=================================\n");
     printf("Escolha uma opcao: ");
-    scanf("%d", &data.option_number);
+    scanf("%d", &menu_option);
 
-    if(data.option_number == 2 || data.option_number == 3 || data.option_number == 4){
-        data.matricula = inputInt("Digite o numero de matricula: ");
-    }
-
-
-    return data;
+    return menu_option;
 }
  
-int handle_crud(MenuData data){
-    switch (data.option_number) {
+int handle_crud(int menu_option){
+
+    switch (menu_option) {
 
     case 1:
         handle_create();
         break;
 
     case 2:
-        handle_read(data.matricula);
+        handle_read();
         break;
     
     case 3:
-        handle_update(data.matricula);
+        handle_update();
+        break;
+
+    case 4:
+        handle_delete();
         break;
 
     case 0:
         printf(RED "Programa encerrado!\n" RESET);
         break;
+
     default:
         printf("Opção inválida \n");
         break;
@@ -111,13 +103,10 @@ int handle_crud(MenuData data){
 }
 
 int handle_create(){
-    FILE *file = fopen("arq.txt", "a");
-    if(file == NULL){
-        printf("Error ao abrir arquivo \n.");
-        return 0;
-    } 
+    FILE *file = open_file("arq.txt", "a");
 
     printf("\n==============ADICIONANDO ALUNO===================\n");
+
     int matricula = inputInt("Digite o número de matrícula: ");
 
     char aluno[10];
@@ -126,92 +115,110 @@ int handle_create(){
     char curso[10];
     inputString("Digite o nome do curso: ", curso);
 
+    
     fprintf(file, "\n%d;%s;%s", matricula, aluno, curso);
 
-    printf("\nAdicionando Aluno...\n");
-    sleep(2);
-    printf("Aluno adicionado, voltando para o menu.\n");
-    sleep(2);
-    printf("\n");
+    printf(GREEN "\nAluno adicionado. Pressione enter para continuar!\n" RESET);
+    while(getchar() != '\n'); //limpar o buffer
+    getchar();
 
     fclose(file);
 
     return 1;
 }
 
-int handle_read(int aluno_matricula){
-    FILE *file = open_file("arq.txt", "r");
-    
-    char line[100];
-    short student_founded = 0; //controlar o estado de aluno encontrado e ñ encontrado
+int handle_read(){
+    printf("\n==============CONSULTANDO ALUNO===================\n");
 
-    //loop de busca do aluno line by line e campos
-    while (fgets(line, sizeof(line), file) != NULL) {
-        char *campos[3];// armazenara os ponteiros, que apontam para os campos.
+    int aluno_matricula = inputInt("Digite o numero de matricula: ");
 
-        campos[0] = strtok(line, ";");
-        campos[1] = strtok(NULL, ";");
-        campos[2] = strtok(NULL, ";");
-        int current_matricula = atoi(campos[0]);
+    int alunos_lines;
+    Aluno *alunos = struct_database(&alunos_lines); // MONTAR MATRIZ DOS DADOS.
 
-        if(current_matricula == aluno_matricula){
-            student_founded = 1;    
-            printf("Aluno encontrado...\n\n");
-            printf("%-20s %-30s %-15s\n", "Matricula", "Nome", "Curso");
-            printf("%-20s %-30s %-15s\n", campos[0], campos[1], campos[2]);
+    for(int i = 0; i < alunos_lines; i++){
+        if(alunos[i].matricula == aluno_matricula){
+            printf(GREEN "Aluno encontrado...\n\n" RESET);
 
-            printf("Pressione enter para continuar!");
+            printf("%-10s %-20s %-15s\n", "Matrícula", "Nome", "Curso");
+            printf("%-10d%-20s %-15s\n", alunos[i].matricula, alunos[i].nome, alunos[i].curso);
+
+            printf("Pressione enter para continuar!\n");
             while(getchar() != '\n'); //limpar o buffer
             getchar();
 
-            break;
+            free(alunos);
+            return 1; 
         }
-         
     }
 
-    if(student_founded == 0) printf(RED "Aluno da matrícula: %d, não encontrado.\n" RESET, aluno_matricula);
-    
-
-    fclose(file);
-    printf(GREEN "Arquivo lido com sucesso.\n" RESET);
-    sleep(2);
-
-    return 1;
+    printf(RED "Aluno da matrícula: %d, não encontrado.\n" RESET, aluno_matricula);
+    printf("Pressione enter para continuar!\n");
+    while(getchar() != '\n'); //limpar o buffer
+    getchar();
+    return 0;
 }
 
-int handle_update(int aluno_matricula){
-    FILE *file = open_file("arq.txt", "r+");
+int handle_update(){
+    printf("\n==============ATUALIZANDO ALUNO===================\n");
 
-    char line[100];
-    int student_founded = 0;
+    int aluno_matricula = inputInt("Digite o numero de matricula: ");
 
-    while(fgets(line, sizeof(line), file) != NULL){
-        char *campos[3];
+    int lines = 0;
+    Aluno *alunos = struct_database(&lines);
+    int aluno_index = 0;
 
-        campos[0] = strtok(line, ";");
-        campos[1] = strtok(NULL, ";");
-        campos[2] = strtok(NULL, ";");
-        int current_matricula = atoi(campos[0]);
-        if(current_matricula == aluno_matricula){
-            student_founded = 1;
-            printf("Aluno encontrado...\n\n");
-            printf("%-20s %-30s %-15s\n", "Matricula", "Nome", "Curso");
-            printf("%-20s %-30s %-15s\n", campos[0], campos[1], campos[2]);
+    for(int i = 0; i < lines; i++){
+        if(alunos[i].matricula == aluno_matricula){
 
-            printf("Qual campo você deseja alterar?\n");
-            int number_input = inputInt("Digite 1(Matricula), 2(Nome), 3(Curso): ");
+            printf(GREEN "Aluno p/ atualizar encontrado...\n\n" RESET);
 
+            printf("%-10s %-20s %-15s\n", "Matrícula", "Nome", "Curso");
+            printf("%-10d%-20s %-15s\n", alunos[i].matricula, alunos[i].nome, alunos[i].curso);
 
-
+            aluno_index = i;
             break;
         }
-
     }
+
+    int update_num = inputInt("Qual campo do aluno voce deseja alterar.\nDigite o numero, (0) Matricula, (1) Nome, (2) Curso: ");
+
+    switch (update_num){
+    case 0:
+        int new_matricula = inputInt("Digite o novo número de matricula: ");
+        alunos[aluno_index].matricula = new_matricula;
+        break;
+    case 1:
+        char new_name[10];
+        inputString("Digite o novo nome: ", new_name);
+        strcpy(alunos[aluno_index].nome, new_name);
+        break;
+    case 2:
+        char new_curso[10];
+        inputString("Digite o novo curso: ", new_curso);
+        strcpy(alunos[aluno_index].curso, new_curso);
+        break;
+    default:
+        printf("Campo inválido.");
+        break;
+    }
+
+
+    //! BUG TO RESOLVE ABOVE
+
+    FILE *file = open_file("arq.txt", "w");
+
+    fprintf(file, "matricula;nome;curso");
+
+    for(int i = 0; i < lines; i++){
+        fprintf(file, "%d;%s;%s", alunos[i].matricula, alunos[i].nome, alunos[i].curso);
+    }
+
+    fclose(file);
 
     return 0;
 }
 
-int handle_delete(int aluno_matricula){
+int handle_delete(){
     FILE *file = open_file("arq.txt", "r+");
 
 
@@ -257,51 +264,6 @@ Aluno *struct_database(int *out_lines) {
     *out_lines = lines; // devolve a quantidade pro chamador
     return alunos;
 }
-
-
-
-// Aluno struct_database(){
-//     FILE *file = open_file("arq.txt", "r");
-
-//     char line[256];
-//     int lines = 0;
-
-//     fgets(line, sizeof(line), file);
-
-//     while(fgets(line, sizeof(line), file) != NULL) lines++; // contas quantas linhas tem o arq.txt p/ criar vetor
-//     fclose(file);
-
-//     //CRIAR O VETOR DOS ALUNOS
-//     FILE *file2 = open_file("arq.txt", "r");
-//     Aluno alunos[lines];
-//     line[0] = '\0';
-//     int i = 0;
-
-//     fgets(line, sizeof(line), file2); //pular cabeçalho
-//     while(fgets(line, sizeof(line), file2) != NULL){
-
-//         char *campo;
-
-//         campo = strtok(line, ";"); //1 campo
-//         alunos[i].matricula = atoi(campo);
-//         campo = strtok(NULL, ";"); //2 campo
-//         strcpy(alunos[i].nome, campo);
-
-//         campo = strtok(NULL, ";"); //3 campo
-//         strcpy(alunos[i].curso, campo);
-
-//         i++;
-//     }
-
-//     fclose(file2);
-//     return alunos;
-// }
-
-
-
-
-
-
 
 FILE *open_file(const char *file_name, const char *modo){
     FILE *file = fopen(file_name, modo);
