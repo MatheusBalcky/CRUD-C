@@ -91,7 +91,7 @@ int handle_crud(int menu_option){
         break;
 
     case 0:
-        printf(RED "Programa encerrado!\n" RESET);
+        printf(RED "\nPrograma encerrado!\n\n" RESET);
         break;
 
     default:
@@ -197,10 +197,8 @@ int handle_update(){
         strcpy(alunos[aluno_index].nome, new_name);
         break;
     case 2:
-        char new_curso_input[9];
-        inputString("Digite o novo curso: ", new_curso_input);
         char new_curso[10];
-        sprintf(new_curso, "%s\n", new_curso_input);
+        inputString("Digite o novo curso: ", new_curso);
         strcpy(alunos[aluno_index].curso, new_curso);
         break;
     default:
@@ -216,6 +214,8 @@ int handle_update(){
 
     for(int i = 0; i < lines; i++){
         fprintf(file, "%d;%s;%s", alunos[i].matricula, alunos[i].nome, alunos[i].curso);
+        if(i + 1 == lines) break;
+        fprintf(file, "\n");
     }
 
     fclose(file);
@@ -229,10 +229,10 @@ int handle_delete(){
     int alunos_lines = 0;
     Aluno *alunos = struct_database(&alunos_lines);
 
-    int aluno_index = -1;
+    int aluno_indice = -1;
     for(int i = 0; i < alunos_lines; i++){
         if(alunos[i].matricula == aluno_matricula){
-            aluno_index = i;
+            aluno_indice = i;
 
             printf(GREEN "Aluno encontrado...\n\n" RESET);
 
@@ -245,30 +245,26 @@ int handle_delete(){
         }
     }
 
-    if(aluno_index == -1){
+    if(aluno_indice == -1){
         printf(RED "Aluno não encontrado." RESET);
         return 0;
     }
 
     //& REMOVER ALUNO COM DESLOCAMENTO DOS ELEMENTOS;
-
-     //!BUG AO DELETAR O ULTIMO
-    for(int i = aluno_index; i < alunos_lines - 1; i++){
-        alunos[i] = alunos[i + 1];
+    alunos_lines--; //alunos_lines-- vai garantir q o for n ultrapasse o final do vetor.
+    for(int i = aluno_indice; i < alunos_lines; i++){
+        alunos[i] = alunos[i + 1]; 
     }
 
-    alunos_lines--;
-
-
     //& REESCREVE O ARQUIVO.TXT COM AS NOVAS ALTERAÇÕES
-
     FILE *file = open_file("arq.txt", "w");
 
     fprintf(file, "matricula;nome;curso\n");
 
     for(int i = 0; i < alunos_lines; i++){
-        printf("@@@@@@@@@@@@Debug i[%d] %d\n", i, alunos[i].matricula); //! CONSERTAR BUG
         fprintf(file, "%d;%s;%s", alunos[i].matricula, alunos[i].nome, alunos[i].curso);
+        if(i + 1 == alunos_lines) break;
+        fprintf(file, "\n");
     }
 
     fclose(file);
@@ -310,6 +306,7 @@ Aluno *struct_database(int *out_lines) {
 
         campo = strtok(NULL, ";");
         strcpy(alunos[i].curso, campo);
+        alunos[i].curso[strcspn(alunos[i].curso, "\n")] = '\0';
 
         i++;
     }
