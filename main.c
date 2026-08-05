@@ -6,8 +6,6 @@
 #define RESET   "\033[0m"
 #define RED     "\033[31m"
 #define GREEN   "\033[32m"
-#define YELLOW  "\033[33m"
-#define BLUE    "\033[34m"
 
 typedef struct {
     int matricula;
@@ -16,24 +14,16 @@ typedef struct {
 } Aluno;
 
 int menu();
-
 int handle_crud(int menu_option);
-
 int handle_create();
-
 int handle_read();
-
 int handle_update();
-
 int handle_delete();
-
 Aluno *struct_database(int *out_lines);
-
 FILE *open_file(const char *fileName, const char *modo);
 
 
 //*---------------------------FUNÇÃO MAIN---------------------------------//
-
 int main (void){
     int crud_option;
     int switcher = 1;
