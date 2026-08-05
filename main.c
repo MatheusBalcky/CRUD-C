@@ -54,7 +54,7 @@ int main (void){
 //*----------------------FUNÇÕES----------------------------//
 
 int menu(){
-    int menu_option = -1;
+    int menu_option = 0;
     
     printf("\n================MENU DE ALUNOS================\n");
     printf("\nOlá o que você deseja, selecione uma opção abaixo.\n\n");
@@ -165,19 +165,23 @@ int handle_update(){
 
     int lines = 0;
     Aluno *alunos = struct_database(&lines);
-    int aluno_index = 0;
+    int aluno_index = -1;
 
     for(int i = 0; i < lines; i++){
         if(alunos[i].matricula == aluno_matricula){
-
             printf(GREEN "Aluno p/ atualizar encontrado...\n\n" RESET);
 
             printf("%-10s %-20s %-15s\n", "Matrícula", "Nome", "Curso");
             printf("%-10d%-20s %-15s\n", alunos[i].matricula, alunos[i].nome, alunos[i].curso);
 
-            aluno_index = i;
+            aluno_index = i; //& WSALVA A POSIÇÃO DO ALUNO NA MATRIX PARA ALTERAÇÃO
             break;
         }
+    }
+
+    if(aluno_index == -1){
+        printf(RED "Aluno não encontrado." RESET);
+        return 0;
     }
 
     int update_num = inputInt("Qual campo do aluno voce deseja alterar.\nDigite o numero, (0) Matricula, (1) Nome, (2) Curso: ");
@@ -193,8 +197,10 @@ int handle_update(){
         strcpy(alunos[aluno_index].nome, new_name);
         break;
     case 2:
+        char new_curso_input[9];
+        inputString("Digite o novo curso: ", new_curso_input);
         char new_curso[10];
-        inputString("Digite o novo curso: ", new_curso);
+        sprintf(new_curso, "%s\n", new_curso_input);
         strcpy(alunos[aluno_index].curso, new_curso);
         break;
     default:
@@ -202,12 +208,11 @@ int handle_update(){
         break;
     }
 
-
-    //! BUG TO RESOLVE ABOVE
+    //& REESCREVE O ARQUIVO.TXT COM AS NOVAS ALTERAÇÕES
 
     FILE *file = open_file("arq.txt", "w");
 
-    fprintf(file, "matricula;nome;curso");
+    fprintf(file, "matricula;nome;curso\n");
 
     for(int i = 0; i < lines; i++){
         fprintf(file, "%d;%s;%s", alunos[i].matricula, alunos[i].nome, alunos[i].curso);
@@ -219,9 +224,57 @@ int handle_update(){
 }
 
 int handle_delete(){
-    FILE *file = open_file("arq.txt", "r+");
+    int aluno_matricula = inputInt("Qual a matricula do aluno p/ ser deletado: ");
+
+    int alunos_lines = 0;
+    Aluno *alunos = struct_database(&alunos_lines);
+
+    int aluno_index = -1;
+    for(int i = 0; i < alunos_lines; i++){
+        if(alunos[i].matricula == aluno_matricula){
+            aluno_index = i;
+
+            printf(GREEN "Aluno encontrado...\n\n" RESET);
+
+            printf("%-10s %-20s %-15s\n", "Matrícula", "Nome", "Curso");
+            printf("%-10d%-20s %-15s\n", alunos[i].matricula, alunos[i].nome, alunos[i].curso);
+
+            printf("Pressione enter para continuar e deletar o aluno!\n");
+            while(getchar() != '\n'); //limpar o buffer
+            getchar();
+        }
+    }
+
+    if(aluno_index == -1){
+        printf(RED "Aluno não encontrado." RESET);
+        return 0;
+    }
+
+    //& REMOVER ALUNO COM DESLOCAMENTO DOS ELEMENTOS;
+
+     //!BUG AO DELETAR O ULTIMO
+    for(int i = aluno_index; i < alunos_lines - 1; i++){
+        alunos[i] = alunos[i + 1];
+    }
+
+    alunos_lines--;
 
 
+    //& REESCREVE O ARQUIVO.TXT COM AS NOVAS ALTERAÇÕES
+
+    FILE *file = open_file("arq.txt", "w");
+
+    fprintf(file, "matricula;nome;curso\n");
+
+    for(int i = 0; i < alunos_lines; i++){
+        printf("@@@@@@@@@@@@Debug i[%d] %d\n", i, alunos[i].matricula); //! CONSERTAR BUG
+        fprintf(file, "%d;%s;%s", alunos[i].matricula, alunos[i].nome, alunos[i].curso);
+    }
+
+    fclose(file);
+    free(alunos);
+    printf(RED "Aluno deletado" RESET);
+    return 0;
 }
 
 Aluno *struct_database(int *out_lines) {
@@ -229,7 +282,8 @@ Aluno *struct_database(int *out_lines) {
     char line[256];
     int lines = 0;
 
-    fgets(line, sizeof(line), file);
+    fgets(line, sizeof(line), file); //& DESCARTA CABEÇALHO
+
     while (fgets(line, sizeof(line), file) != NULL) lines++;
     fclose(file);
 
@@ -237,6 +291,7 @@ Aluno *struct_database(int *out_lines) {
     FILE *file2 = open_file("arq.txt", "r");
     Aluno *alunos = malloc(lines * sizeof(Aluno)); // sobrevive após o return
     if (alunos == NULL) {
+        printf(RED "Erro ao alocar memória para estruturar matriz" RESET);
         fclose(file2);
         return NULL;
     }

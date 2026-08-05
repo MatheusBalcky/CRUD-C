@@ -21,5 +21,7 @@ int inputInt(char mensagem[]) {
 
 void inputString(char mensagem[], char valor[]) {
     printf("%s", mensagem);
-    scanf("%9s", valor); 
+    scanf("%9s", valor);
+
+    while (getchar() != '\n'); //&LIMPAR O BUFFER DE CARACTERES EXTRAS
 }
