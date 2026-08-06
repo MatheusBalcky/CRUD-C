@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "inputs_outputs.h"
 #include <unistd.h>
 #define RESET   "\033[0m"
 #define RED     "\033[31m"
@@ -12,6 +11,10 @@ typedef struct {
     char nome[100];
     char curso[50];
 } Aluno;
+
+float inputFloat(char mensagem[]);
+int inputInt(char mensagem[]);
+void inputString(char mensagem[], char valor[]);
 
 int menu();
 int handle_crud(int menu_option);
@@ -273,7 +276,7 @@ Aluno *struct_database(int *out_lines) {
     while (fgets(line, sizeof(line), file) != NULL) lines++;
     fclose(file);
 
-    //CRIAR O VETOR DOS ALUNOS
+    //CRIAR UM VETOR DOS ALUNOS
     FILE *file2 = open_file("arq.txt", "r");
     Aluno *alunos = malloc(lines * sizeof(Aluno)); // sobrevive após o return
     if (alunos == NULL) {
@@ -316,4 +319,29 @@ FILE *open_file(const char *file_name, const char *modo){
     }
 
     return file;
+}
+
+float inputFloat(char mensagem[]) {
+    float valor;
+
+    printf("%s", mensagem);
+    scanf("%f", &valor);
+
+    return valor;
+}
+
+int inputInt(char mensagem[]) {
+    int valor;
+
+    printf("%s", mensagem);
+    scanf("%d", &valor);
+
+    return valor;
+}
+
+void inputString(char mensagem[], char valor[]) {
+    printf("%s", mensagem);
+    scanf("%9s", valor);
+
+    while (getchar() != '\n'); //&LIMPAR O BUFFER DE CARACTERES EXTRAS
 }
